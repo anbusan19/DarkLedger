@@ -1,11 +1,11 @@
-# Ledger-De-Main 🧟‍♂️💰
+# DarkLedger 🧟‍♂️💰
 > **"The only payroll platform your Accountant AND your Crypto-Bro CTO will agree on."**
 
 ![Kiroween Hackathon](https://img.shields.io/badge/Kiroween-Frankenstein_Track-purple)
 ![Tech Stack](https://img.shields.io/badge/COBOL-Base_L2-blue)
 
 ## 💀 The Concept (Frankenstein Category)
-Ledger-De-Main is a **chimera**: a monstrous stitching of 1960s mainframe technology with 2025 Web3 settlement.
+DarkLedger is a **chimera**: a monstrous stitching of 1960s mainframe technology with 2025 Web3 settlement.
 
 We use **COBOL** for the math (because floating-point errors in Python/JS are dangerous) and **Base (L2)** for the money (because it's fast and cheap).
 
