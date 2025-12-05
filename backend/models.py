@@ -37,6 +37,12 @@ class EmployeePayrollInput(BaseModel):
         max_length=2,
         description="Two-character tax jurisdiction code"
     )
+    wallet_address: str = Field(
+        ...,
+        min_length=42,
+        max_length=42,
+        description="Ethereum wallet address for settlement (0x + 40 hex chars)"
+    )
     
     model_config = {
         "json_schema_extra": {
@@ -45,7 +51,8 @@ class EmployeePayrollInput(BaseModel):
                     "employee_id": "EMP0001234",
                     "hours_worked": 40.00,
                     "hourly_rate": 25.50,
-                    "tax_code": "US"
+                    "tax_code": "US",
+                    "wallet_address": "0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb"
                 }
             ]
         }
@@ -116,6 +123,10 @@ class EmployeePayrollOutput(BaseModel):
         ...,
         description="Processing status: 'OK' for success, 'ER' for error"
     )
+    wallet_address: str = Field(
+        ...,
+        description="Ethereum wallet address for settlement"
+    )
     
     model_config = {
         "json_schema_extra": {
@@ -126,7 +137,8 @@ class EmployeePayrollOutput(BaseModel):
                     "federal_tax": 153.00,
                     "state_tax": 51.00,
                     "net_pay": 816.00,
-                    "status": "OK"
+                    "status": "OK",
+                    "wallet_address": "0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb"
                 }
             ]
         }
