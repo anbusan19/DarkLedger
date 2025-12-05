@@ -1,0 +1,22 @@
+{
+  "employees": [
+    {
+      "employee_id": "EMP0001234",
+      "hours_worked": 40.00,
+      "hourly_rate": 25.50,
+      "tax_code": "US"
+    },
+    {
+      "employee_id": "EMP0005678",
+      "hours_worked": 35.50,
+      "hourly_rate": 32.00,
+      "tax_code": "US"
+    },
+    {
+      "employee_id": "EMP0009999",
+      "hours_worked": 45.75,
+      "hourly_rate": 18.25,
+      "tax_code": "US"
+    }
+  ]
+}

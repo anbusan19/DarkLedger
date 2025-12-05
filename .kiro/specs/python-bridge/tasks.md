@@ -212,17 +212,22 @@
     - Test error cases (invalid data, missing COBOL binary)
     - _Requirements: 1.1, 1.2, 1.3_
 
-- [-] 10. Verify end-to-end integration
+- [x] 10. Verify end-to-end integration
 
 
 
 
-  - [ ] 10.1 Start FastAPI server
+
+
+  - [x] 10.1 Start FastAPI server
+
     - Run `uvicorn backend.main:app --reload` and verify server starts without errors
     - Check that /docs endpoint is accessible and shows API documentation
     - Verify CORS headers are present in responses
     - _Requirements: 1.4, 8.1, 8.2_
-  - [ ] 10.2 Test payroll processing flow
+
+  - [x] 10.2 Test payroll processing flow
+
     - Send POST request with valid employee data
     - Verify input.dat is created with correct format
     - Verify COBOL binary executes successfully
