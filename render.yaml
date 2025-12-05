@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: ledger-de-main
+    env: docker
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    plan: starter  # Options: free, starter, standard, pro
+    envVars:
+      - key: COINBASE_API_KEY_NAME
+        sync: false  # Set this manually in Render dashboard
+      - key: COINBASE_PRIVATE_KEY
+        sync: false  # Set this manually in Render dashboard
+      - key: NETWORK_ID
+        value: base-sepolia  # Default to testnet, change to 'base' for mainnet
+      - key: CORS_ORIGINS
+        value: ""  # Leave empty for same-origin (frontend served from same domain)
+    healthCheckPath: /health
+

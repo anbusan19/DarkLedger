@@ -5,10 +5,13 @@ THE FACE: This is the modern REST API that fronts the legacy COBOL brain.
 Real work is done by the COBOL binary - this just provides a clean HTTP interface.
 """
 
+import os
 import logging
 from datetime import datetime
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 from backend.models import PayrollRequest, PayrollResponse
 from backend.bridge import process_payroll
 from backend.coinbase_client import CoinbaseClient
@@ -30,11 +33,18 @@ app = FastAPI(
 )
 
 # Configure CORS middleware for frontend integration
-# Allow React dev server (port 3000) and Vite dev server (port 5173)
-origins = [
-    "http://localhost:3000",  # React dev server
-    "http://localhost:5173",  # Vite dev server
-]
+# In production, use CORS_ORIGINS environment variable (comma-separated)
+# In development, allow localhost origins
+cors_origins_env = os.getenv("CORS_ORIGINS", "")
+if cors_origins_env:
+    # Parse comma-separated origins from environment variable
+    origins = [origin.strip() for origin in cors_origins_env.split(",")]
+else:
+    # Development defaults
+    origins = [
+        "http://localhost:3000",  # React dev server
+        "http://localhost:5173",  # Vite dev server
+    ]
 
 app.add_middleware(
     CORSMiddleware,
@@ -45,6 +55,18 @@ app.add_middleware(
 )
 
 logger.info("Ledger-De-Main API initialized successfully")
+
+# Serve static files from frontend build in production
+# Check if frontend/dist exists (production build)
+frontend_dist_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "frontend", "dist")
+if os.path.exists(frontend_dist_path):
+    # Mount assets directory (Vite outputs JS/CSS to dist/assets)
+    assets_path = os.path.join(frontend_dist_path, "assets")
+    if os.path.exists(assets_path):
+        app.mount("/assets", StaticFiles(directory=assets_path), name="assets")
+    
+    # Serve other static files (favicon.ico, etc.) from dist root
+    # We'll check for these files individually in the catch-all route
 
 
 @app.get("/health")
@@ -360,3 +382,32 @@ async def startup_event():
 async def shutdown_event():
     """Log shutdown information."""
     logger.info("Ledger-De-Main API shutting down")
+
+
+# Serve frontend SPA - must be last route (catch-all)
+# This serves index.html for all non-API routes to support client-side routing
+if os.path.exists(frontend_dist_path):
+    @app.get("/{full_path:path}")
+    async def serve_frontend(full_path: str):
+        """
+        Serve frontend SPA index.html for client-side routing.
+        This catch-all route handles all requests that aren't API endpoints.
+        """
+        # Don't serve frontend for API routes, docs, or assets (already mounted)
+        if (full_path.startswith("api/") or 
+            full_path in ["docs", "redoc", "openapi.json"] or
+            full_path.startswith("assets/")):
+            raise HTTPException(status_code=404, detail="Not found")
+        
+        # Check if this is a request for a specific file (e.g., favicon.ico)
+        # Serve it if it exists, otherwise serve index.html for SPA routing
+        file_path = os.path.join(frontend_dist_path, full_path)
+        if os.path.isfile(file_path) and not full_path.endswith(".html"):
+            return FileResponse(file_path)
+        
+        # Serve index.html for SPA routing (all other routes)
+        index_path = os.path.join(frontend_dist_path, "index.html")
+        if os.path.exists(index_path):
+            return FileResponse(index_path)
+        else:
+            raise HTTPException(status_code=404, detail="Frontend not found")

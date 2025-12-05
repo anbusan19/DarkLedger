@@ -238,7 +238,10 @@ const Hero = () => {
         </FadeIn>
 
         <FadeIn delay={200}>
-          <button className={`px-8 py-4 rounded-full text-lg font-medium transition-all transform hover:scale-105 shadow-xl hover:shadow-2xl ${buttonClass}`}>
+          <button
+            className={`px-8 py-4 rounded-full text-lg font-medium transition-all transform hover:scale-105 shadow-xl hover:shadow-2xl ${buttonClass}`}
+            onClick={() => window.location.href = "https://dark-ledger.vercel.app"}
+          >
             {isSpooky ? 'Summon a Demo' : 'Request Access'}
           </button>
         </FadeIn>
