@@ -277,9 +277,12 @@ async def process_and_settle_endpoint(request: PayrollRequest):
         
         # Step 2: Execute settlement on blockchain
         # THE BODY: Execute USDC transfers on Base L2
+        # Note: Settlement works in mock mode without API keys
         logger.info("💸 THE BODY: Executing blockchain settlement...")
         try:
-            client = CoinbaseClient()
+            # Get network from environment or default to testnet
+            network = os.getenv("NETWORK_ID", "base-sepolia")
+            client = CoinbaseClient(network=network)
             settlement_summary = client.batch_settle(payroll_response)
             
             logger.info(

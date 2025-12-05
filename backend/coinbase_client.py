@@ -4,7 +4,8 @@ Coinbase Client for Settlement Integration
 Handles cryptocurrency payments using the Coinbase Developer Platform (CDP) SDK.
 This is THE BODY executing blockchain transfers with THE BRAIN's precision.
 
-NOTE: This is a MOCK implementation for testing without actual CDP credentials.
+NOTE: This is a MOCK implementation that works without Coinbase API keys.
+API keys are optional - if not provided, the system runs in mock mode.
 """
 
 import logging
@@ -68,6 +69,8 @@ class CoinbaseClient:
         """
         Initialize CoinbaseClient with specified network.
         
+        Works in mock mode without API keys. Real API keys are optional.
+        
         Args:
             network: Network to use ("base-sepolia" or "base-mainnet")
                     Defaults to "base-sepolia" for safe testing.
@@ -76,22 +79,32 @@ class CoinbaseClient:
         self.account_address = None
         self.mock_balance = Decimal("10000.00")  # Mock balance of 10,000 USDC
         
+        # Check if real API keys are provided
+        api_key_name = os.getenv("CDP_API_KEY_ID") or os.getenv("COINBASE_API_KEY_NAME")
+        private_key = os.getenv("CDP_API_KEY_SECRET") or os.getenv("COINBASE_PRIVATE_KEY")
+        self.using_real_api = bool(api_key_name and private_key)
+        
         # Configure SDK on initialization
         self._configure_sdk()
     
     def _configure_sdk(self):
         """
-        MOCK: Configure the CDP SDK (simulated).
+        Configure the CDP SDK.
         
-        This method simulates SDK configuration without requiring actual credentials.
+        Works in mock mode without API keys. If real API keys are provided,
+        they would be used here (currently using mock implementation).
         """
-        # Log network configuration
-        if self.network == "base-mainnet":
-            logger.warning(
-                f"⚠️  MOCK MAINNET MODE: Using {self.network} (simulated)"
-            )
+        if self.using_real_api:
+            logger.info(f"🔧 SDK Configured: Network={self.network} (using real API keys)")
+            logger.warning("⚠️  Note: Real SDK integration not yet implemented, using mock mode")
         else:
-            logger.info(f"🔧 MOCK SDK Configured: Network={self.network} (simulated)")
+            # Log network configuration
+            if self.network == "base-mainnet":
+                logger.warning(
+                    f"⚠️  MOCK MAINNET MODE: Using {self.network} (simulated - no API keys provided)"
+                )
+            else:
+                logger.info(f"🔧 MOCK SDK Configured: Network={self.network} (simulated - API keys optional)")
     
     def create_wallet(self) -> str:
         """

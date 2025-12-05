@@ -6,9 +6,10 @@ services:
     ports:
       - "8000:8000"
     environment:
-      - COINBASE_API_KEY_NAME=${COINBASE_API_KEY_NAME}
-      - COINBASE_PRIVATE_KEY=${COINBASE_PRIVATE_KEY}
-      - NETWORK_ID=${NETWORK_ID:-base-sepolia}  # Default to testnet
+      # Optional: Coinbase API keys (system works in mock mode without them)
+      - COINBASE_API_KEY_NAME=${COINBASE_API_KEY_NAME:-}
+      - COINBASE_PRIVATE_KEY=${COINBASE_PRIVATE_KEY:-}
+      - NETWORK_ID=${NETWORK_ID:-base-sepolia}  # Default to testnet (only needed with real API keys)
       - CORS_ORIGINS=${CORS_ORIGINS:-}  # Optional: comma-separated origins (e.g., "https://example.com,https://app.example.com")
     volumes:
       - ./data:/app/data  # Persist COBOL I/O files

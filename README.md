@@ -30,7 +30,7 @@ We refuse to modernize the math. We run the core payroll logic in **COBOL**—th
 * `gnucobol` (compiler)
 * `python 3.9+`
 * `node 18+`
-* `coinbase-cdp-sdk` (pip install cdp-sdk)
+* ~~`coinbase-cdp-sdk`~~ (optional - system works in mock mode without it)
 
 ### Quick Start
 

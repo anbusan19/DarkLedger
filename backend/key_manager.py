@@ -1,7 +1,8 @@
 """
 Key Manager for Coinbase CDP Credentials
 
-MOCK VERSION: Returns mock credentials for testing without actual API keys.
+Returns mock credentials when API keys are not provided.
+Works without API keys - system automatically falls back to mock mode.
 Never hardcode keys - this is THE BODY protecting THE BRAIN's secrets.
 """
 
@@ -10,19 +11,23 @@ from typing import Tuple
 
 
 class KeyManager:
-    """MOCK: Manages secure loading of Coinbase API credentials."""
+    """Manages secure loading of Coinbase API credentials (optional)."""
     
     def __init__(self):
         """
-        Initialize KeyManager with mock credentials.
+        Initialize KeyManager with credentials from environment or mock values.
         
-        In production, this would load from environment variables:
-        - CDP_API_KEY_ID and CDP_API_KEY_SECRET (new SDK)
-        - COINBASE_API_KEY_NAME and COINBASE_PRIVATE_KEY (legacy)
+        API keys are optional. If not provided, system uses mock values.
+        Environment variables supported:
+        - CDP_API_KEY_ID and CDP_API_KEY_SECRET (new SDK format)
+        - COINBASE_API_KEY_NAME and COINBASE_PRIVATE_KEY (legacy format)
+        
+        If neither is set, uses mock credentials for testing.
         """
-        # Try to load from environment, but use mock values if not present
+        # Try to load from environment, fallback to mock values if not present
         self.api_key_name = os.getenv("CDP_API_KEY_ID") or os.getenv("COINBASE_API_KEY_NAME") or "MOCK_API_KEY"
         self.private_key = os.getenv("CDP_API_KEY_SECRET") or os.getenv("COINBASE_PRIVATE_KEY") or "MOCK_PRIVATE_KEY"
+        self.is_mock = not (os.getenv("CDP_API_KEY_ID") or os.getenv("COINBASE_API_KEY_NAME"))
     
     def get_credentials(self) -> Tuple[str, str]:
         """
