@@ -3,17 +3,20 @@ Coinbase Client for Settlement Integration
 
 Handles cryptocurrency payments using the Coinbase Developer Platform (CDP) SDK.
 This is THE BODY executing blockchain transfers with THE BRAIN's precision.
+
+NOTE: This is a MOCK implementation for testing without actual CDP credentials.
 """
 
 import logging
 import os
 import re
+import time
+from datetime import datetime
 from decimal import Decimal
 from typing import Optional
+import hashlib
+import random
 
-from cdp import Cdp, Wallet
-
-from backend import key_manager
 from backend.models import PayrollResponse
 
 
@@ -52,7 +55,10 @@ if not logger.handlers:
 
 class CoinbaseClient:
     """
-    Client for managing Coinbase CDP wallet operations and USDC transfers.
+    MOCK Client for managing Coinbase CDP wallet operations and USDC transfers.
+    
+    This is a mock implementation that simulates blockchain operations
+    without requiring actual CDP credentials or network access.
     
     Handles wallet initialization, balance checking, and settlement execution
     on Base L2 network (Sepolia testnet or Mainnet).
@@ -67,145 +73,113 @@ class CoinbaseClient:
                     Defaults to "base-sepolia" for safe testing.
         """
         self.network = network
-        self.wallet: Optional[Wallet] = None
+        self.account_address = None
+        self.mock_balance = Decimal("10000.00")  # Mock balance of 10,000 USDC
         
         # Configure SDK on initialization
         self._configure_sdk()
     
     def _configure_sdk(self):
         """
-        Configure the CDP SDK with API credentials from key_manager.
+        MOCK: Configure the CDP SDK (simulated).
         
-        This method:
-        - Loads credentials securely from environment variables
-        - Configures the CDP SDK for blockchain operations
-        - Logs the network being used (with warning for mainnet)
-        
-        Raises:
-            ValueError: If credentials are missing or invalid
+        This method simulates SDK configuration without requiring actual credentials.
         """
-        try:
-            # Get credentials from key_manager (Real work is done by key_manager)
-            api_key_name, private_key = key_manager.key_manager.get_credentials()
-            
-            # Configure CDP SDK
-            Cdp.configure(api_key_name, private_key)
-            
-            # Log network configuration
-            if self.network == "base-mainnet":
-                logger.warning(
-                    f"⚠️  MAINNET MODE: Using {self.network} - REAL FUNDS AT RISK"
-                )
-            else:
-                logger.info(f"🔧 SDK Configured: Network={self.network}")
-                
-        except ValueError as e:
-            logger.error(f"❌ SDK Configuration Failed: {e}")
-            raise
+        # Log network configuration
+        if self.network == "base-mainnet":
+            logger.warning(
+                f"⚠️  MOCK MAINNET MODE: Using {self.network} (simulated)"
+            )
+        else:
+            logger.info(f"🔧 MOCK SDK Configured: Network={self.network} (simulated)")
     
-    def create_wallet(self) -> Wallet:
+    def create_wallet(self) -> str:
         """
-        Create a new wallet for settlement operations.
-        
-        This method creates a new CDP wallet and stores it for future use.
-        The wallet ID should be persisted (e.g., in environment variables)
-        for reuse across sessions.
+        MOCK: Create a new wallet for settlement operations.
         
         Returns:
-            Wallet: The newly created wallet instance
+            str: The mock wallet address
         """
-        logger.info("🔨 Creating new wallet...")
-        self.wallet = Wallet.create(network_id=self.network)
-        logger.info(f"✅ Wallet Created: ID={self.wallet.id}")
-        logger.info(f"💾 Persist this wallet ID: export PAYROLL_WALLET_ID={self.wallet.id}")
-        return self.wallet
+        logger.info("🔨 MOCK: Creating new smart account...")
+        # Generate a mock Ethereum address
+        self.account_address = f"0x{''.join(random.choices('0123456789abcdef', k=40))}"
+        logger.info(f"✅ MOCK Smart Account Created: Address={self.account_address}")
+        logger.info(f"💾 Persist this address: export PAYROLL_WALLET_ADDRESS={self.account_address}")
+        return self.account_address
     
-    def load_wallet(self, wallet_id: str) -> Wallet:
+    def load_wallet(self, wallet_address: str) -> str:
         """
-        Load an existing wallet by its ID.
+        MOCK: Load an existing smart account by its address.
         
         Args:
-            wallet_id: The unique identifier of the wallet to load
+            wallet_address: The address of the smart account to load
             
         Returns:
-            Wallet: The loaded wallet instance
+            str: The loaded wallet address
         """
-        logger.info(f"📂 Loading wallet: {wallet_id}")
-        self.wallet = Wallet.fetch(wallet_id)
-        logger.info(f"✅ Wallet Loaded: ID={self.wallet.id}")
-        return self.wallet
+        logger.info(f"📂 MOCK: Loading smart account: {wallet_address}")
+        self.account_address = wallet_address
+        logger.info(f"✅ MOCK Smart Account Loaded: Address={self.account_address}")
+        return self.account_address
     
-    def load_wallet_from_seed(self, seed: str) -> Wallet:
+    def load_wallet_from_seed(self, seed: str) -> str:
         """
-        Load a wallet from its seed phrase.
+        MOCK: Load a smart account from its seed phrase.
         
         Args:
-            seed: The seed phrase for the wallet
+            seed: The seed phrase (not used in mock implementation)
             
         Returns:
-            Wallet: The imported wallet instance
+            str: The mock wallet address
         """
-        logger.info("🌱 Importing wallet from seed...")
-        self.wallet = Wallet.import_data(seed=seed, network_id=self.network)
-        logger.info(f"✅ Wallet Imported: ID={self.wallet.id}")
-        return self.wallet
+        logger.warning("🌱 MOCK: Seed import - creating new account")
+        return self.create_wallet()
     
-    def _ensure_wallet(self) -> Wallet:
+    def _ensure_wallet(self) -> str:
         """
-        Ensure a wallet is initialized, loading or creating as needed.
-        
-        This method checks if a wallet is already loaded. If not, it attempts to:
-        1. Load from PAYROLL_WALLET_ID environment variable
-        2. Load from PAYROLL_WALLET_SEED environment variable
-        3. Create a new wallet if neither is set
+        MOCK: Ensure a smart account is initialized, loading or creating as needed.
         
         Returns:
-            Wallet: The initialized wallet instance
+            str: The initialized wallet address
         """
-        if self.wallet is not None:
-            return self.wallet
+        if self.account_address is not None:
+            return self.account_address
         
-        # Try loading from wallet ID
+        # Try loading from wallet address
+        wallet_address = os.getenv("PAYROLL_WALLET_ADDRESS")
+        if wallet_address:
+            logger.info("🔑 MOCK: Initializing account from PAYROLL_WALLET_ADDRESS")
+            return self.load_wallet(wallet_address)
+        
+        # Try loading from legacy wallet ID (treat as address)
         wallet_id = os.getenv("PAYROLL_WALLET_ID")
         if wallet_id:
-            logger.info("🔑 Initializing wallet from PAYROLL_WALLET_ID")
+            logger.info("🔑 MOCK: Initializing account from PAYROLL_WALLET_ID")
             return self.load_wallet(wallet_id)
         
-        # Try loading from seed
-        wallet_seed = os.getenv("PAYROLL_WALLET_SEED")
-        if wallet_seed:
-            logger.info("🔑 Initializing wallet from PAYROLL_WALLET_SEED")
-            return self.load_wallet_from_seed(wallet_seed)
-        
-        # Create new wallet if neither is set
-        logger.warning("⚠️  No wallet credentials found - creating new wallet")
+        # Create new account if neither is set
+        logger.warning("⚠️  MOCK: No wallet credentials found - creating new account")
         return self.create_wallet()
     
     def get_balance(self, asset: str = "usdc") -> Decimal:
         """
-        Get the wallet balance for a specified asset.
+        MOCK: Get the wallet balance for a specified asset.
         
         Args:
             asset: The asset to check balance for (default: "usdc")
             
         Returns:
-            Decimal: The balance amount with full precision
+            Decimal: The mock balance amount
         """
-        # Ensure wallet is initialized
+        # Ensure account is initialized
         self._ensure_wallet()
         
-        # Get balance from wallet (Real work is done by CDP SDK)
-        balance = self.wallet.balance(asset)
-        
-        logger.info(f"💰 Balance: {balance} {asset.upper()}")
-        return Decimal(str(balance))
+        logger.info(f"💰 MOCK Balance: {self.mock_balance} {asset.upper()}")
+        return self.mock_balance
     
     def request_faucet(self, asset: str = "usdc") -> None:
         """
-        Request testnet funds from the faucet.
-        
-        This method is only available on testnet (base-sepolia).
-        It will raise an error if called on mainnet.
+        MOCK: Request testnet funds from the faucet.
         
         Args:
             asset: The asset to request from faucet (default: "usdc")
@@ -215,19 +189,19 @@ class CoinbaseClient:
         """
         # Prevent faucet requests on mainnet
         if self.network == "base-mainnet":
-            error_msg = "❌ Faucet not available on mainnet - use real funds"
+            error_msg = "❌ MOCK: Faucet not available on mainnet"
             logger.error(error_msg)
             raise ValueError(error_msg)
         
-        # Ensure wallet is initialized
+        # Ensure account is initialized
         self._ensure_wallet()
         
-        # Request faucet funds and wait for completion
-        logger.info(f"🚰 Requesting faucet funds: {asset.upper()}...")
-        faucet_tx = self.wallet.faucet(asset)
-        faucet_tx.wait()
+        # Simulate faucet request
+        logger.info(f"🚰 MOCK: Requesting faucet funds: {asset.upper()}...")
+        time.sleep(0.5)  # Simulate network delay
+        self.mock_balance += Decimal("1000.00")  # Add 1000 USDC
         
-        logger.info(f"✅ Faucet request completed for {asset.upper()}")
+        logger.info(f"✅ MOCK: Faucet request completed for {asset.upper()}")
     
     def _is_valid_address(self, address: str) -> bool:
         """
@@ -329,26 +303,28 @@ class CoinbaseClient:
         try:
             start_time = time.time()
             
-            # Execute the transfer (Real work is done by CDP SDK)
-            transfer = self.wallet.transfer(
-                amount=float(amount),
-                asset_id="usdc",
-                destination=to_address
-            )
+            # MOCK: Simulate the transfer
+            time.sleep(0.3)  # Simulate network delay
             
-            # Wait for transaction confirmation
-            transfer.wait()
+            # Deduct from mock balance
+            self.mock_balance -= amount
             
             # Calculate execution duration
             duration = time.time() - start_time
             
-            # Extract transaction details
-            transaction_hash = transfer.transaction_hash
-            transaction_link = transfer.transaction_link
+            # Generate mock transaction hash
+            hash_input = f"{to_address}{amount}{time.time()}".encode()
+            transaction_hash = "0x" + hashlib.sha256(hash_input).hexdigest()
+            
+            # Build transaction link for Base network
+            if self.network == "base-mainnet":
+                transaction_link = f"https://basescan.org/tx/{transaction_hash}"
+            else:
+                transaction_link = f"https://sepolia.basescan.org/tx/{transaction_hash}"
             
             # Log successful transfer
             logger.info(
-                f"✅ Transfer Confirmed{employee_context}: "
+                f"✅ MOCK Transfer Confirmed{employee_context}: "
                 f"{transaction_hash} ({duration:.2f}s)"
             )
             
@@ -367,7 +343,7 @@ class CoinbaseClient:
             # Log error with context
             error_msg = str(e)
             logger.error(
-                f"❌ Transfer Failed{employee_context}: {error_msg}"
+                f"❌ MOCK Transfer Failed{employee_context}: {error_msg}"
             )
             
             # Return failure result

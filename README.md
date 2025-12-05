@@ -32,13 +32,48 @@ We refuse to modernize the math. We run the core payroll logic in **COBOL**—th
 * `node 18+`
 * `coinbase-cdp-sdk` (pip install cdp-sdk)
 
-### Usage
-1.  **Start the Brain:** `uvicorn backend.main:app --reload`
-2.  **Start the Face:** `npm start`
-3.  **Run Payroll:**
-    * Navigate to the terminal UI.
-    * Type: `RUN PAYROLL --BATCH 2025-10-31`
-    * Watch the ghost in the machine work.
+### Quick Start
+
+**Option 1: Use the startup scripts (Windows)**
+```bash
+# Terminal 1: Start backend
+start_backend.bat
+
+# Terminal 2: Start frontend
+start_frontend.bat
+```
+
+**Option 2: Manual start**
+```bash
+# Terminal 1: Start the backend
+cd backend
+uvicorn main:app --reload --host 127.0.0.1 --port 8000
+
+# Terminal 2: Start the frontend
+cd frontend
+npm install  # First time only
+npm run dev
+```
+
+Then open http://localhost:5173/ in your browser.
+
+### Using the Terminal Interface
+
+The UI is a retro terminal with green text on black background. Available commands:
+
+* `HELP` - Show all commands
+* `RUN <emp_id> <hours> <rate> <tax_code> <wallet>` - Process payroll only
+* `SETTLE <emp_id> <hours> <rate> <tax_code> <wallet>` - Process + settle on Base L2
+* `BATCH` - Process multiple employees (demo)
+* `STATUS` - Show session data
+* `CLEAR` - Clear screen
+
+**Example:**
+```
+> RUN EMP001 40 25.50 US 0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb2
+```
+
+For detailed integration guide, see [INTEGRATION_GUIDE.md](INTEGRATION_GUIDE.md)
 
 ## 👻 Kiro Implementation
 This project was built using Kiro's **Agentic Workflow**:

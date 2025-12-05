@@ -395,7 +395,8 @@ def process_payroll(request: PayrollRequest) -> PayrollResponse:
                 employee_id="EMP001",
                 hours_worked=Decimal("40.00"),
                 hourly_rate=Decimal("25.50"),
-                tax_code="US"
+                tax_code="US",
+                wallet_address="0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb"
             )
         ])
         response = process_payroll(request)
@@ -416,6 +417,12 @@ def process_payroll(request: PayrollRequest) -> PayrollResponse:
         Exception: For any other unexpected errors during processing
     """
     logger.info(f"Starting payroll processing for {len(request.employees)} employees")
+    
+    # Create a mapping of employee_id to wallet_address for later use
+    employee_wallet_map = {
+        emp.employee_id: emp.wallet_address 
+        for emp in request.employees
+    }
     
     try:
         # Step 1: Write input file
@@ -482,7 +489,7 @@ def process_payroll(request: PayrollRequest) -> PayrollResponse:
         results = []
         summary = {"processed": 0, "errors": 0}
         
-        logger.info("Parsing COBOL output")
+        logger.info("Parsing COBOL output lines")
         try:
             for line in output_lines:
                 # Check if this is the summary line
@@ -493,17 +500,22 @@ def process_payroll(request: PayrollRequest) -> PayrollResponse:
                     # Parse employee result line
                     parsed_result = parse_output_line(line)
                     
+                    # Get wallet address from the mapping
+                    employee_id = parsed_result["employee_id"]
+                    wallet_address = employee_wallet_map.get(employee_id, "")
+            
                     # Convert to EmployeePayrollOutput model
-                    employee_output = EmployeePayrollOutput(
+                    result = EmployeePayrollOutput(
                         employee_id=parsed_result["employee_id"],
                         gross_pay=parsed_result["gross_pay"],
                         federal_tax=parsed_result["federal_tax"],
                         state_tax=parsed_result["state_tax"],
                         net_pay=parsed_result["net_pay"],
-                        status=parsed_result["status"]
+                        status=parsed_result["status"],
+                        wallet_address=wallet_address
                     )
-                    results.append(employee_output)
-            
+                    results.append(result)
+        
             logger.info(f"Successfully parsed {len(results)} employee results")
             
         except ValueError as e:
@@ -525,11 +537,10 @@ def process_payroll(request: PayrollRequest) -> PayrollResponse:
             f"Payroll processing completed successfully: "
             f"{summary['processed']} processed, {summary['errors']} errors"
         )
-        
         return response
         
     except Exception as e:
-        # Catch-all for any unexpected errors
+        # Catch-all for any unexpected errors during processing
         error_msg = f"Unexpected error during payroll processing: {e}"
         logger.error(error_msg)
         raise Exception(error_msg)

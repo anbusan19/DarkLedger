@@ -1,0 +1,41 @@
+# Node
+node_modules/
+frontend/node_modules/
+landing/node_modules/
+npm-debug.log
+yarn-error.log
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+
+# COBOL
+cobol/bin/*.exe  # Don't copy Windows binaries
+
+# Environment
+.env
+.env.local
+*.key
+*.pem
+
+# Git
+.git/
+.gitignore
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Misc
+README.md
+.DS_Store

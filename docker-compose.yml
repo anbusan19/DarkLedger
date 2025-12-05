@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  frankenstein:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - COINBASE_API_KEY_NAME=${COINBASE_API_KEY_NAME}
+      - COINBASE_PRIVATE_KEY=${COINBASE_PRIVATE_KEY}
+      - NETWORK_ID=${NETWORK_ID:-base-sepolia}  # Default to testnet
+    volumes:
+      - ./data:/app/data  # Persist COBOL I/O files
+    restart: unless-stopped

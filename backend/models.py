@@ -77,13 +77,15 @@ class PayrollRequest(BaseModel):
                             "employee_id": "EMP0001234",
                             "hours_worked": 40.00,
                             "hourly_rate": 25.50,
-                            "tax_code": "US"
+                            "tax_code": "US",
+                            "wallet_address": "0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb"
                         },
                         {
                             "employee_id": "EMP0005678",
                             "hours_worked": 35.50,
                             "hourly_rate": 30.00,
-                            "tax_code": "US"
+                            "tax_code": "US",
+                            "wallet_address": "0x8B3a3b8e9c7d6f5e4d3c2b1a0987654321fedcba"
                         }
                     ]
                 }
@@ -168,7 +170,8 @@ class PayrollResponse(BaseModel):
                             "federal_tax": 153.00,
                             "state_tax": 51.00,
                             "net_pay": 816.00,
-                            "status": "OK"
+                            "status": "OK",
+                            "wallet_address": "0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb"
                         }
                     ],
                     "summary": {
